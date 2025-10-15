@@ -4,6 +4,11 @@ import tqdm
 import torch
 import numpy as np
 import torch.nn as nn
+try:
+    import wandb
+    WANDB_AVAILABLE = True
+except ImportError:
+    WANDB_AVAILABLE = False
 
 from lib.helpers.save_helper import get_checkpoint_state
 from lib.helpers.save_helper import load_checkpoint
@@ -23,7 +28,8 @@ class Trainer(object):
                  warmup_lr_scheduler,
                  logger,
                  loss,
-                 model_name):
+                 model_name,
+                 wandb_cfg=None):
         self.cfg = cfg
         self.model = model
         self.optimizer = optimizer
@@ -40,6 +46,11 @@ class Trainer(object):
         self.model_name = model_name
         self.output_dir = os.path.join('./' + cfg['save_path'], model_name)
         self.tester = None
+        
+        # Initialize wandb settings
+        self.wandb_cfg = wandb_cfg or {}
+        self.use_wandb = WANDB_AVAILABLE and self.wandb_cfg.get('enabled', False)
+        self.wandb_log_frequency = self.wandb_cfg.get('log_frequency', 30)
 
         # loading pretrain/resume model
         if cfg.get('pretrain_model'):
@@ -98,6 +109,16 @@ class Trainer(object):
                     self.logger.info("Test Epoch {}".format(self.epoch))
                     self.tester.inference()
                     cur_result = self.tester.evaluate()
+                    
+                    # Log validation results to wandb
+                    if self.use_wandb:
+                        wandb.log({
+                            'epoch': self.epoch,
+                            'val_result': cur_result,
+                            'best_result': best_result,
+                            'learning_rate': self.optimizer.param_groups[0]['lr']
+                        })
+                    
                     if cur_result > best_result:
                         best_result = cur_result
                         best_epoch = self.epoch
@@ -165,6 +186,20 @@ class Trainer(object):
                     print("%s: %.2f, " %(key, val), end="")
                 print("")
                 print("")
+
+            # Log to wandb
+            if self.use_wandb and batch_idx % self.wandb_log_frequency == 0:
+                log_dict = {
+                    'train/epoch': epoch,
+                    'train/batch': batch_idx,
+                    'train/learning_rate': self.optimizer.param_groups[0]['lr']
+                }
+                
+                # Add all loss components
+                for key, val in detr_losses_dict_log.items():
+                    log_dict[f'train/{key}'] = val
+                
+                wandb.log(log_dict)
 
             detr_losses.backward()
             self.optimizer.step()

@@ -1,6 +1,16 @@
 random_seed: 444
 
 
+# Weights & Biases configuration
+wandb:
+  enabled: True
+  project: 'MonoDETR'
+  name: 'monodetr_experiment'
+  tags: ['monocular', '3d_detection', 'kitti']
+  notes: 'MonoDETR training on KITTI dataset'
+  log_frequency: 30  # log every N batches
+
+
 dataset:
   type: &dataset_type 'KITTI'
   root_dir: 'data/KITTIDataset'
