@@ -16,7 +16,7 @@ dataset:
   root_dir: '/kaggle/input/kitti-dataset/KITTI_Monoflex'
   train_split: 'train'
   test_split: 'val'
-  batch_size: 12
+  batch_size: 10
   use_3d_center: True
   class_merging: False
   use_dontcare: False
