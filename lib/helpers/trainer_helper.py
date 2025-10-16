@@ -63,15 +63,18 @@ class Trainer(object):
 
         if cfg.get('resume_model', None):
             resume_model_path = os.path.join(self.output_dir, "checkpoint.pth")
-            assert os.path.exists(resume_model_path)
-            self.epoch, self.best_result, self.best_epoch = load_checkpoint(
-                model=self.model.to(self.device),
-                optimizer=self.optimizer,
-                filename=resume_model_path,
-                map_location=self.device,
-                logger=self.logger)
-            self.lr_scheduler.last_epoch = self.epoch - 1
-            self.logger.info("Loading Checkpoint... Best Result:{}, Best Epoch:{}".format(self.best_result, self.best_epoch))
+            if os.path.exists(resume_model_path):
+                self.epoch, self.best_result, self.best_epoch = load_checkpoint(
+                    model=self.model.to(self.device),
+                    optimizer=self.optimizer,
+                    filename=resume_model_path,
+                    map_location=self.device,
+                    logger=self.logger)
+                self.lr_scheduler.last_epoch = self.epoch - 1
+                self.logger.info("Loading Checkpoint... Best Result:{}, Best Epoch:{}".format(self.best_result, self.best_epoch))
+            else:
+                self.logger.info("Resume model enabled but checkpoint.pth not found at: {}".format(resume_model_path))
+                self.logger.info("Starting fresh training from pretrained weights...")
         
     def train(self):
         start_epoch = self.epoch
