@@ -6,8 +6,10 @@ wandb:
   enabled: True
   project: 'MonoDETR'
   name: 'monodetr_experiment'
+  resume: 'must'  # Resume existing run
+  run_id: '728tys1u'  # Specific run ID to resume
   tags: ['monocular', '3d_detection', 'kitti']
-  notes: 'MonoDETR training on KITTI dataset'
+  notes: 'MonoDETR training on KITTI dataset - Resumed training'
   log_frequency: 30  # log every N batches
 
 

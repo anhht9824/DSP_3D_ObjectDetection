@@ -39,18 +39,31 @@ def main():
     if cfg.get('wandb', {}).get('enabled', False):
         wandb_config = cfg['wandb']
         
-        # Initialize wandb
-        wandb.init(
-            project=wandb_config.get('project', 'MonoDETR'),
-            name=wandb_config.get('name', 'monodetr_experiment'),
-            tags=wandb_config.get('tags', []),
-            notes=wandb_config.get('notes', ''),
-            config=cfg
-        )
-        
-        # Update experiment name with timestamp for uniqueness
-        run_name = f"{wandb_config.get('name', 'monodetr_experiment')}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        wandb.run.name = run_name
+        # Check if we need to resume a specific run
+        if wandb_config.get('resume') == 'must' and wandb_config.get('run_id'):
+            # Resume existing run
+            wandb.init(
+                project=wandb_config.get('project', 'MonoDETR'),
+                id=wandb_config.get('run_id'),
+                resume='must',
+                tags=wandb_config.get('tags', []),
+                notes=wandb_config.get('notes', ''),
+                config=cfg
+            )
+            print(f"Resumed wandb run: {wandb_config.get('run_id')}")
+        else:
+            # Start new run
+            wandb.init(
+                project=wandb_config.get('project', 'MonoDETR'),
+                name=wandb_config.get('name', 'monodetr_experiment'),
+                tags=wandb_config.get('tags', []),
+                notes=wandb_config.get('notes', ''),
+                config=cfg
+            )
+            
+            # Update experiment name with timestamp for uniqueness
+            run_name = f"{wandb_config.get('name', 'monodetr_experiment')}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            wandb.run.name = run_name
 
     model_name = cfg['model_name']
     output_path = os.path.join('./' + cfg["trainer"]['save_path'], model_name)
