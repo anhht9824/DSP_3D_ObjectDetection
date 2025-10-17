@@ -118,8 +118,8 @@ trainer:
   max_epoch: 100
   gpu_ids: '1'
   save_frequency: 1  # checkpoint save interval (in epoch)
-  resume_model: True
-  pretrain_model: /kaggle/working/DSP_MonoDETR/outputs/monodetr/checkpoint.pth
+  resume_model: False
+  pretrain_model: /kaggle/working/DSP_MonoDETR/outputs/monodetr/checkpoint_best.pth
   save_path: 'outputs/'
   save_all: False  # False for only savng the best and latest ckpts
   use_dn: False
@@ -131,6 +131,6 @@ trainer:
 tester:
   type: *dataset_type
   mode: single  # 'single' or 'all'; 'all' to evaluate all ckpts in the folder
-  checkpoint: 195  # the start ckpt epoch for 'all'
+  checkpoint: 58  # the start ckpt epoch for 'all'
   threshold: 0.2  # confidence filter
   topk: 50
